@@ -13,6 +13,7 @@ typedef enum {
 
     TOKEN_LET,
     TOKEN_IDENTIFIER,
+    TOKEN_DOT,
     TOKEN_NUMBER,
     TOKEN_ASSIGN,      // =
     TOKEN_SEMICOLON,   // ;
@@ -45,7 +46,6 @@ typedef enum {
     AST_CALL_EXPRESSION,
 
 } ASTNodeType;
-
 
 typedef struct  ASTNode {
 
@@ -85,7 +85,15 @@ void printAST(ASTNode *node, int depth) {
     if(!node) return;
 
     for(int i = 0; i < depth; i++) printf("   ");
-    printf("%s", node->type == AST_VARIABLE_DECL ? "VariableDeclaration" : node->type == AST_IDENTIFIER ? "Identifier" : node->type == AST_NUMBER ? "Number" : "Unknow");
+
+    switch (node->type) {
+        case AST_VARIABLE_DECL: printf("variable_declaration"); break;
+        case AST_IDENTIFIER: printf("Identifier"); break;
+        case AST_NUMBER: printf("Number"); break;
+        case AST_BINARY_OPERATION: printf("Binary_Operation"); break;
+        case AST_CALL_EXPRESSION: printf("Call_expression"); break;
+        default: printf("Uknow"); break;
+    }
     
     if(strlen(node->value) > 0) {
         printf(": %s", node->value);
@@ -128,6 +136,50 @@ int getVariable(const char *name){
 
 }
 
+
+int eval(ASTNode *node) {
+
+    if(!node) return 0;
+
+    switch (node->type) {
+        case AST_NUMBER:
+            return atoi(node->value);
+            // break;
+
+        case AST_IDENTIFIER:
+            return getVariable(node->value);
+            // break;
+
+        case AST_BINARY_OPERATION: {
+            int left = eval(node->left);
+            int right = eval(node->right);
+            if(strcmp(node->value, "+") == 0) return left + right;
+            if(strcmp(node->value, "-") == 0) return left - right;
+            if(strcmp(node->value, "*") == 0) return left * right;
+            if(strcmp(node->value, "/") == 0) return left / right;
+            break;
+        }
+
+        case AST_VARIABLE_DECL: {
+            int value = eval(node->right);
+            setVariable(node->left->value, value);
+            return value;
+        }
+
+        case AST_CALL_EXPRESSION: {
+            if(strcmp(node->value, "console.log") == 0) {
+                int result = eval(node->left);
+                printf("%d\n", result);
+                return result;
+            }
+            break;
+        }
+    }
+    
+    return 0;
+
+}
+
 //lexer 
 int isKeyWord(const char *str) {
     return strcmp(str, "let") == 0;
@@ -164,12 +216,6 @@ Token getNextToken(FILE *fp) {
         }
         token.text[i] = '\0';
         ungetc(c, fp);
-
-        // if( isKeyWord(token.text) ) {
-        //     token.type = TOKEN_LET;
-        // } else {
-        //     token.type = TOKEN_IDENTIFIER;
-        // }
 
         if(strcmp(token.text, "let") == 0) {
             token.type = TOKEN_LET;
@@ -242,6 +288,12 @@ Token getNextToken(FILE *fp) {
         return token;
     }
 
+    if(c == '.'){
+        token.type = TOKEN_DOT;
+        strcpy(token.text, ".");
+        return token;
+    }
+
     token.type = TOKEN_UNKNOW;
     token.text[0] = c;
     token.text[1] = '\0';
@@ -249,9 +301,7 @@ Token getNextToken(FILE *fp) {
 
 }
 
-
 // Parser
-
 Token currentToken;
 FILE *fp;
 
@@ -259,18 +309,19 @@ ASTNode *parseExpression();
 ASTNode *parseFactor();
 ASTNode *parseTerm();
 ASTNode *parseVariableDeclaration();
+ASTNode *parseConsoleLog();
 void parseProgram();
 
 void advance() {
-
     currentToken = getNextToken(fp);
-
 }
 
 
 void expect(TokenType type) {
 
     if( currentToken.type != type ){
+
+        if(type == TOKEN_EOF && currentToken.type == TOKEN_EOF) return;
 
         printf("Erro de sintaxe: esperado token %d mas veio %d (%s)\n", type, currentToken.type, currentToken.text);
         exit(1);
@@ -315,7 +366,7 @@ ASTNode *parseTerm() {
 
     ASTNode *node = parseFactor();
 
-    while ((currentToken.type == TOKEN_STAR || currentToken.type == TOKEN_SLASH)) {
+    while (currentToken.type == TOKEN_STAR || currentToken.type == TOKEN_SLASH) {
 
         char operation[2];
         strcpy(operation, currentToken.text);
@@ -326,7 +377,6 @@ ASTNode *parseTerm() {
         operationNode->left = node;
         operationNode->right = right;
         node = operationNode;
-
     }
 
     return node;
@@ -381,21 +431,22 @@ ASTNode *parseVariableDeclaration() {
 
     return variableDeclaration;
 
-    // if(currentToken.type != TOKEN_NUMBER) {
-    //     printf("Erro: esperado número após '='\n");
-    //     exit(1);
-    // }
+}
 
-    // ASTNode *numNode = createNode(AST_NUMBER, currentToken.text);
-    // advance();
+ASTNode *parseConsoleLog(){
 
-    // expect(TOKEN_SEMICOLON);
-    
-    // ASTNode *varDecl = createNode(AST_VARIABLE_DECL, "");
-    // varDecl->left = idNode;
-    // varDecl->right = numNode;
+    expect(TOKEN_IDENTIFIER);
+    expect(TOKEN_DOT);
+    expect(TOKEN_IDENTIFIER);
 
-    // return varDecl;
+    expect(TOKEN_LEFT_PARENT);
+    ASTNode *expression = parseExpression();
+    expect(TOKEN_RIGHT_PARENT);
+    expect(TOKEN_SEMICOLON);
+
+    ASTNode *call = createNode(AST_CALL_EXPRESSION, "console.log");
+    call->left = expression;
+    return call;
 
 }
 
@@ -403,18 +454,28 @@ void parseProgram() {
 
     while (currentToken.type != TOKEN_EOF){
         
-        ASTNode *tree = parseVariableDeclaration();
+        ASTNode *tree = NULL;
+        
+        if(strcmp(currentToken.text, "let") == 0) {
+            tree = parseVariableDeclaration();
+        } else if(strcmp(currentToken.text, "console") == 0) {
+            tree = parseConsoleLog();
+        } else {
+            printf("Erro: instrucao desconhecida '%s'\n", currentToken.text);
+            return;
+        }
+
         printAST(tree, 0);
+        eval(tree);
+        
+        if(currentToken.type == TOKEN_EOF) break;
 
     }
-    
 
 }
 
 
-
 // Main da aplicação
-
 int main() {
 
 
@@ -422,19 +483,14 @@ int main() {
     if(!fp){
 
         printf("Erro ao abrir o arquivo!\n");
-        // Debug(fp);
         return 1;
 
     }
 
-    // rewind(fp);
-
     advance();
-    // ASTNode *tree = parseVariableDeclaration();
 
     printf("===== AST =====\n");
     
-    // printAST(tree, 0);
     parseProgram();
     
     fclose(fp);
@@ -445,10 +501,3 @@ int main() {
     return 0;
 
 }
-
-
-
-
-
-
-

@@ -1,7 +1,8 @@
-let x = 1;
-let y = 90;
-let z = 10;
+let x = 20;
+let y = 20;
+let z = 20;
 
 
-let sum = x * y;
-console.log(sum)
+let sum = y + y * z;
+
+console.log(sum);
