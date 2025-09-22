@@ -165,37 +165,37 @@ Token getNextToken(FILE *fp) {
 
     if(c == '+') {
         token.type = TOKEN_PLUS;
-        strcpy(token.type, '+');
+        strcpy(token.type, "+");
         return token;
     }
 
     if(c == '-') {
         token.type = TOKEN_MINUS;
-        strcpy(token.text, '-');
+        strcpy(token.text, "-");
         return token;
     }
 
     if(c == '*') {
         token.type = TOKEN_STAR;
-        strcpy(token.text, '*');
+        strcpy(token.text, "*");
         return token;
     }
 
     if(c == '/') {
         token.type = TOKEN_SLASH;
-        strcpy(token.text, '/');
+        strcpy(token.text, "/");
         return token;
     }
 
     if(c == '(') {
         token.type = TOKEN_LEFT_PARENT;
-        strcpy(token.text, '(');
+        strcpy(token.text, "(");
         return token;
     }
 
     if(c == ')') {
         token.type = TOKEN_RIGHT_PARENT;
-        strcpy(token.text, ')');
+        strcpy(token.text, ")");
         return token;
     }
 
@@ -246,10 +246,10 @@ ASTNode *parseFactor() {
         return idNode;
     }
 
-    if(currentToken.text == TOKEN_LEFT_PARENT) {
+    if(currentToken.type == TOKEN_LEFT_PARENT) {
         advance();
         ASTNode *expr = parseExpression();
-        if(currentToken.text != TOKEN_RIGHT_PARENT){
+        if(currentToken.type != TOKEN_RIGHT_PARENT){
             printf("Erro: esperado )\n");
             exit(1);
         }
@@ -266,7 +266,7 @@ ASTNode *parseTerm() {
 
     ASTNode *node = parseFactor();
 
-    while ((currentToken.text == TOKEN_STAR || currentToken.text == TOKEN_SLASH)) {
+    while ((currentToken.type == TOKEN_STAR || currentToken.type == TOKEN_SLASH)) {
 
         char operation[2];
         strcpy(operation, currentToken.text);
@@ -288,7 +288,7 @@ ASTNode *parseExpression() {
 
     ASTNode *node = parseTerm();
 
-    while (currentToken.text == TOKEN_PLUS || currentToken.text == TOKEN_MINUS){
+    while (currentToken.type == TOKEN_PLUS || currentToken.type == TOKEN_MINUS){
 
         char operation[2];
         strcpy(operation, currentToken.text);
