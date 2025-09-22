@@ -84,6 +84,23 @@ int isKeyWord(const char *str) {
     return strcmp(str, "let") == 0;
 }
 
+void Debug(FILE *f){
+
+    // FILE *f = fopen("codigo.txt", "r");
+    // if (!f) {
+    //     perror("Erro ao abrir o arquivo");
+    //     return 1;
+    // }
+
+    int ch;
+    while ((ch = fgetc(f)) != EOF) {
+        printf("[Debug] Byte lido: %d (%c)\n", ch, ch);
+    }
+    // fclose(f);
+    
+
+}
+
 Token getNextToken(FILE *fp) {
 
     Token token;
@@ -97,6 +114,8 @@ Token getNextToken(FILE *fp) {
         strcpy(token.text, "EOF");
         return token;
     }
+
+    // printf("[Debug]: Char lido é %c (%d)\n", c, c);
 
     if(isalpha(c) || c == '_') {
 
@@ -213,6 +232,7 @@ ASTNode *parseVariableDeclaration() {
 
 int main() {
 
+
     fp = fopen("input.ts", "r");
     if(!fp){
 
@@ -221,13 +241,21 @@ int main() {
 
     }
 
+    Debug(fp);
+
     advance();
     ASTNode *tree = parseVariableDeclaration();
 
     printf("===== AST =====\n");
+    
     printAST(tree, 0);
     
     fclose(fp);
+
+    // system("pause");
+    printf("Pressione Enter para sair...\n");
+    getchar();
+
     return 0;
 
 }
