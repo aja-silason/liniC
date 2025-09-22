@@ -252,10 +252,12 @@ ASTNode *parseFactor() {
         return expr;
     }
 
-    printf("Erro: factor inválido (%s)\n", currentToken.text);
+    printf("Erro: factor inválido (%s)\n ", currentToken.text);
     exit(1);
 
 }
+
+
 
 // Main da aplicação
 
