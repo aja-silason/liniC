@@ -53,7 +53,7 @@ ASTNode *createNote(ASTNodeType type, const char *value) {
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
 
     node->type = type;
-    strcpy(node->left, value ? value : "");
+    strcpy(node->value, value ? value : "");
     node->left = NULL;
     node->right = NULL;
     return node;
@@ -131,13 +131,13 @@ Token getNextToken(FILE *fp) {
 
     if(c == '=') {
         token.type = TOKEN_ASSIGN;
-        strcpy(token.text, '=');
+        strcpy(token.text, "=");
         return token;
     }
 
     if( c == ';' ){
         token.type = TOKEN_SEMICOLON;
-        strcpy(token.text, ';');
+        strcpy(token.text, ";");
         return token;
     }
 
