@@ -246,10 +246,10 @@ ASTNode *parseFactor() {
         return idNode;
     }
 
-    if(strcmp(currentToken.text, "(") == 0) {
+    if(currentToken.text == TOKEN_LEFT_PARENT) {
         advance();
         ASTNode *expr = parseExpression();
-        if(strcmp(currentToken.text, ")") != 0){
+        if(currentToken.text != TOKEN_RIGHT_PARENT){
             printf("Erro: esperado )\n");
             exit(1);
         }
@@ -266,14 +266,14 @@ ASTNode *parseTerm() {
 
     ASTNode *node = parseFactor();
 
-    while ((strcmp(currentToken.text, "*") == 0 || strcmp(currentToken.text, "/") == 0)) {
+    while ((currentToken.text == TOKEN_STAR || currentToken.text == TOKEN_SLASH)) {
 
         char operation[2];
         strcpy(operation, currentToken.text);
         advance();
 
         ASTNode *right = parseFactor();
-        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation);
+        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation == TOKEN_STAR ? "*" : "/");
         operationNode->left = node;
         operationNode->right = right;
         node = operationNode;
@@ -288,14 +288,14 @@ ASTNode *parseExpression() {
 
     ASTNode *node = parseTerm();
 
-    while (strcmp(currentToken.text, "+") == 0 || strcmp(currentToken.text, "-") == 0){
+    while (currentToken.text == TOKEN_PLUS || currentToken.text == TOKEN_MINUS){
 
         char operation[2];
         strcpy(operation, currentToken.text);
         advance();
 
         ASTNode *right = parseTerm();
-        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation);
+        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation == TOKEN_PLUS ? "+" : "-");
         operationNode->left = node;
         operationNode->right = right;
         node = operationNode;
@@ -373,23 +373,23 @@ int main() {
     if(!fp){
 
         printf("Erro ao abrir o arquivo!\n");
-        Debug(fp);
+        // Debug(fp);
         return 1;
 
     }
 
-    rewind(fp);
+    // rewind(fp);
 
     advance();
-    ASTNode *tree = parseVariableDeclaration();
+    // ASTNode *tree = parseVariableDeclaration();
 
     printf("===== AST =====\n");
     
-    printAST(tree, 0);
+    // printAST(tree, 0);
+    parseProgram();
     
     fclose(fp);
 
-    // system("pause");
     printf("Pressione Enter para sair...\n");
     getchar();
 
