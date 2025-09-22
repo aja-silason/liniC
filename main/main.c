@@ -163,6 +163,42 @@ Token getNextToken(FILE *fp) {
         return token;
     }
 
+    if(c == '+') {
+        token.type = TOKEN_PLUS;
+        strcpy(token.type, '+');
+        return token;
+    }
+
+    if(c == '-') {
+        token.type = TOKEN_MINUS;
+        strcpy(token.text, '-');
+        return token;
+    }
+
+    if(c == '*') {
+        token.type = TOKEN_STAR;
+        strcpy(token.text, '*');
+        return token;
+    }
+
+    if(c == '/') {
+        token.type = TOKEN_SLASH;
+        strcpy(token.text, '/');
+        return token;
+    }
+
+    if(c == '(') {
+        token.type = TOKEN_LEFT_PARENT;
+        strcpy(token.text, '(');
+        return token;
+    }
+
+    if(c == ')') {
+        token.type = TOKEN_RIGHT_PARENT;
+        strcpy(token.text, ')');
+        return token;
+    }
+
     token.type = TOKEN_UNKNOW;
     token.text[0] = c;
     token.text[1] = '\0';
