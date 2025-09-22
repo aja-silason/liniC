@@ -49,7 +49,7 @@ typedef struct  ASTNode {
 
 
 // Funções, metodos auxiliares para AST
-ASTNode *createNote(ASTNodeType type, const char *value) {
+ASTNode *createNode(ASTNodeType type, const char *value) {
 
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
 
@@ -203,7 +203,7 @@ ASTNode *parseVariableDeclaration() {
         exit(1);
     }
 
-    ASTNode *idNode = createNote(AST_IDENTIFIER, currentToken.text);
+    ASTNode *idNode = createNode(AST_IDENTIFIER, currentToken.text);
     advance();
 
     expect(TOKEN_ASSIGN);
@@ -213,12 +213,12 @@ ASTNode *parseVariableDeclaration() {
         exit(1);
     }
 
-    ASTNode *numNode = createNote(AST_NUMBER, currentToken.text);
+    ASTNode *numNode = createNode(AST_NUMBER, currentToken.text);
     advance();
 
     expect(TOKEN_SEMICOLON);
     
-    ASTNode *varDecl = createNote(AST_VARIABLE_DECL, "");
+    ASTNode *varDecl = createNode(AST_VARIABLE_DECL, "");
     varDecl->left = idNode;
     varDecl->right = numNode;
 
@@ -226,6 +226,36 @@ ASTNode *parseVariableDeclaration() {
 
 }
 
+
+ASTNode *parseFactor() {
+
+    if(currentToken.type == TOKEN_NUMBER) {
+        ASTNode *numNode = createNode(AST_NUMBER, currentToken.text);
+        advance();
+        return numNode;
+    }
+
+    if(currentToken.type == TOKEN_IDENTIFIER) {
+        ASTNode *idNode = createNode(AST_IDENTIFIER, currentToken.text);
+        advance();
+        return idNode;
+    }
+
+    if(strcmp(currentToken.text, "(") == 0) {
+        advance();
+        ASTNode *expr = parseExpression();
+        if(strcmp(currentToken.text, ")") != 0){
+            printf("Erro: esperado )\n");
+            exit(1);
+        }
+        advance();
+        return expr;
+    }
+
+    printf("Erro: factor inválido (%s)\n", currentToken.text);
+    exit(1);
+
+}
 
 // Main da aplicação
 
