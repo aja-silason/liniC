@@ -12,8 +12,14 @@ typedef enum {
     TOKEN_LET,
     TOKEN_IDENTIFIER,
     TOKEN_NUMBER,
-    TOKEN_ASSIGN,
-    TOKEN_SEMICOLON,
+    TOKEN_ASSIGN,      // =
+    TOKEN_SEMICOLON,   // ;
+    TOKEN_PLUS,        // +
+    TOKEN_MINUS,       // -
+    TOKEN_STAR,        // *
+    TOKEN_SLASH,       // /
+    TOKEN_LEFT_PARENT,      // (
+    TOKEN_RIGHT_PARENT,
     TOKEN_UNKNOW,
     TOKEN_EOF
 
@@ -80,7 +86,6 @@ void printAST(ASTNode *node, int depth) {
 
 
 //lexer 
-
 int isKeyWord(const char *str) {
     return strcmp(str, "let") == 0;
 }
@@ -108,8 +113,6 @@ Token getNextToken(FILE *fp) {
         return token;
     }
 
-    // printf("[Debug]: Char lido é %c (%d)\n", c, c);
-
     if(isalpha(c) || c == '_') {
 
         token.text[i++] = c;
@@ -119,17 +122,17 @@ Token getNextToken(FILE *fp) {
         token.text[i] = '\0';
         ungetc(c, fp);
 
-        if( isKeyWord(token.text) ) {
-            token.type = TOKEN_LET;
-        } else {
-            token.type = TOKEN_IDENTIFIER;
-        }
-
-        // if(strcmp(token.text, "let") == 0) {
+        // if( isKeyWord(token.text) ) {
         //     token.type = TOKEN_LET;
         // } else {
         //     token.type = TOKEN_IDENTIFIER;
         // }
+
+        if(strcmp(token.text, "let") == 0) {
+            token.type = TOKEN_LET;
+        } else {
+            token.type = TOKEN_IDENTIFIER;
+        }
 
         return token;
 
@@ -192,41 +195,7 @@ void expect(TokenType type) {
 
 }
 
-//Parse ex: let x = 10;
-
-ASTNode *parseVariableDeclaration() {
-
-    expect(TOKEN_LET);
-
-    if(currentToken.type != TOKEN_IDENTIFIER) {
-        printf("Erro: esperado identificador após 'let'\n");
-        exit(1);
-    }
-
-    ASTNode *idNode = createNode(AST_IDENTIFIER, currentToken.text);
-    advance();
-
-    expect(TOKEN_ASSIGN);
-
-    if(currentToken.type != TOKEN_NUMBER) {
-        printf("Erro: esperado número após '='\n");
-        exit(1);
-    }
-
-    ASTNode *numNode = createNode(AST_NUMBER, currentToken.text);
-    advance();
-
-    expect(TOKEN_SEMICOLON);
-    
-    ASTNode *varDecl = createNode(AST_VARIABLE_DECL, "");
-    varDecl->left = idNode;
-    varDecl->right = numNode;
-
-    return varDecl;
-
-}
-
-
+//Parsers
 ASTNode *parseFactor() {
 
     if(currentToken.type == TOKEN_NUMBER) {
@@ -301,6 +270,62 @@ ASTNode *parseExpression() {
     
 
 }
+
+ASTNode *parseVariableDeclaration() {
+
+    expect(TOKEN_LET);
+
+    if(currentToken.type != TOKEN_IDENTIFIER) {
+        printf("Erro: esperado identificador após 'let'\n");
+        exit(1);
+    }
+
+    ASTNode *idNode = createNode(AST_IDENTIFIER, currentToken.text);
+    advance();
+
+    expect(TOKEN_ASSIGN);
+
+    ASTNode *expressionNode = parseExpression();
+
+    expect(TOKEN_SEMICOLON);
+
+    ASTNode *variableDeclaration = createNode(AST_VARIABLE_DECL, "");
+    
+    variableDeclaration->left = idNode;
+    variableDeclaration->right = expressionNode;
+
+    return variableDeclaration;
+
+    // if(currentToken.type != TOKEN_NUMBER) {
+    //     printf("Erro: esperado número após '='\n");
+    //     exit(1);
+    // }
+
+    // ASTNode *numNode = createNode(AST_NUMBER, currentToken.text);
+    // advance();
+
+    // expect(TOKEN_SEMICOLON);
+    
+    // ASTNode *varDecl = createNode(AST_VARIABLE_DECL, "");
+    // varDecl->left = idNode;
+    // varDecl->right = numNode;
+
+    // return varDecl;
+
+}
+
+void parseProgram() {
+
+    while (currentToken.type != TOKEN_EOF){
+        
+        ASTNode *tree = parseVariableDeclaration();
+        printAST(tree, 0);
+
+    }
+    
+
+}
+
 
 
 // Main da aplicação
