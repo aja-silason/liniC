@@ -5,6 +5,8 @@
 
 #define MAX_TOKEN_LEN 100
 
+#define MAX_VARS 100
+
 //Definir os tokens
 
 typedef enum {
@@ -40,6 +42,7 @@ typedef enum {
     AST_IDENTIFIER,
     AST_NUMBER,
     AST_BINARY_OPERATION,
+    AST_CALL_EXPRESSION,
 
 } ASTNodeType;
 
@@ -53,6 +56,16 @@ typedef struct  ASTNode {
 
 } ASTNode;
 
+typedef struct {
+
+    char name[MAX_TOKEN_LEN];
+    int value;
+
+} Variable;
+
+
+Variable variables[MAX_TOKEN_LEN];
+int varCount = 0;
 
 // Funções, metodos auxiliares para AST
 ASTNode *createNode(ASTNodeType type, const char *value) {
@@ -84,6 +97,36 @@ void printAST(ASTNode *node, int depth) {
 
 }
 
+
+void setVariable(const char *name, int value){
+
+    for(int i = 0; i < varCount; i++) {
+        if(strcmp(variables[i].name, name) == 0) {
+            variables[i].value = value;
+            return;
+        }
+    }
+
+    strcpy(variables[varCount].name, name);
+    variables[varCount].value = value;
+    varCount++;
+}
+
+int getVariable(const char *name){
+
+    for(int i = 0; i < varCount; i++) {
+
+        if(strcmp(variables[i].name, name) == 0) {
+
+            return variables[i].value;
+
+        }
+
+    }
+    printf("Erro: variavel '%s' não definida!\n", name);
+    exit(1);
+
+}
 
 //lexer 
 int isKeyWord(const char *str) {
