@@ -165,7 +165,7 @@ Token getNextToken(FILE *fp) {
 
     if(c == '+') {
         token.type = TOKEN_PLUS;
-        strcpy(token.type, "+");
+        strcpy(token.text, "+");
         return token;
     }
 
@@ -211,6 +211,12 @@ Token getNextToken(FILE *fp) {
 
 Token currentToken;
 FILE *fp;
+
+ASTNode *parseExpression();
+ASTNode *parseFactor();
+ASTNode *parseTerm();
+ASTNode *parseVariableDeclaration();
+void parseProgram();
 
 void advance() {
 
@@ -273,7 +279,7 @@ ASTNode *parseTerm() {
         advance();
 
         ASTNode *right = parseFactor();
-        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation == TOKEN_STAR ? "*" : "/");
+        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation);
         operationNode->left = node;
         operationNode->right = right;
         node = operationNode;
@@ -295,7 +301,7 @@ ASTNode *parseExpression() {
         advance();
 
         ASTNode *right = parseTerm();
-        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation == TOKEN_PLUS ? "+" : "-");
+        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation);
         operationNode->left = node;
         operationNode->right = right;
         node = operationNode;
