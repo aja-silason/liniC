@@ -279,6 +279,28 @@ ASTNode *parseTerm() {
 
 }
 
+ASTNode *parseExpression() {
+
+    ASTNode *node = parseTerm();
+
+    while (strcmp(currentToken.text, "+") == 0 || strcmp(currentToken.text, "-") == 0){
+
+        char operation[2];
+        strcpy(operation, currentToken.text);
+        advance();
+
+        ASTNode *right = parseTerm();
+        ASTNode *operationNode = createNode(AST_BINARY_OPERATION, operation);
+        operationNode->left = node;
+        operationNode->right = right;
+        node = operationNode;
+
+    }
+
+    return node;
+    
+
+}
 
 
 // Main da aplicação
