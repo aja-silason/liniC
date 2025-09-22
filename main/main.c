@@ -32,7 +32,8 @@ typedef enum {
 
     AST_VARIABLE_DECL,
     AST_IDENTIFIER,
-    AST_NUMBER
+    AST_NUMBER,
+    AST_BINARY_OPERATION,
 
 } ASTNodeType;
 
@@ -86,18 +87,10 @@ int isKeyWord(const char *str) {
 
 void Debug(FILE *f){
 
-    // FILE *f = fopen("codigo.txt", "r");
-    // if (!f) {
-    //     perror("Erro ao abrir o arquivo");
-    //     return 1;
-    // }
-
     int ch;
     while ((ch = fgetc(f)) != EOF) {
         printf("[Debug] Byte lido: %d (%c)\n", ch, ch);
-    }
-    // fclose(f);
-    
+    }    
 
 }
 
@@ -107,7 +100,7 @@ Token getNextToken(FILE *fp) {
     int c;
     int i = 0;
 
-    while ((c == fgetc(fp)) != EOF && isspace(c));
+    while ((c = fgetc(fp)) != EOF && isspace(c));
     
     if(c == EOF) {
         token.type = TOKEN_EOF;
@@ -120,7 +113,7 @@ Token getNextToken(FILE *fp) {
     if(isalpha(c) || c == '_') {
 
         token.text[i++] = c;
-        while ((c == fgetc(fp)) != EOF && (isalnum(c) || c == '_')) {
+        while ((c = fgetc(fp)) != EOF && (isalnum(c) || c == '_')) {
             token.text[i++] = c;
         }
         token.text[i] = '\0';
@@ -131,6 +124,13 @@ Token getNextToken(FILE *fp) {
         } else {
             token.type = TOKEN_IDENTIFIER;
         }
+
+        // if(strcmp(token.text, "let") == 0) {
+        //     token.type = TOKEN_LET;
+        // } else {
+        //     token.type = TOKEN_IDENTIFIER;
+        // }
+
         return token;
 
     }
@@ -217,6 +217,7 @@ ASTNode *parseVariableDeclaration() {
     advance();
 
     expect(TOKEN_SEMICOLON);
+    
     ASTNode *varDecl = createNote(AST_VARIABLE_DECL, "");
     varDecl->left = idNode;
     varDecl->right = numNode;
@@ -224,8 +225,6 @@ ASTNode *parseVariableDeclaration() {
     return varDecl;
 
 }
-
-
 
 
 // Main da aplicação
@@ -237,11 +236,12 @@ int main() {
     if(!fp){
 
         printf("Erro ao abrir o arquivo!\n");
+        Debug(fp);
         return 1;
 
     }
 
-    Debug(fp);
+    rewind(fp);
 
     advance();
     ASTNode *tree = parseVariableDeclaration();
