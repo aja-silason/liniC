@@ -1,0 +1,3 @@
+C:/projects/C/liniC/main/build/CMakeFiles/liniC.dir
+C:/projects/C/liniC/main/build/CMakeFiles/ALL_BUILD.dir
+C:/projects/C/liniC/main/build/CMakeFiles/ZERO_CHECK.dir

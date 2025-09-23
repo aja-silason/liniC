@@ -1,0 +1,10 @@
+^C:\PROJECTS\C\LINIC\MAIN\BUILD\CMAKEFILES\352CE274CC2C2CC0FCB34EEAC6378E01\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/projects/C/liniC/main -BC:/projects/C/liniC/main/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/projects/C/liniC/main/build/liniC.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

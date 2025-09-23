@@ -3,4 +3,13 @@
 ```bash
 gcc parser.c -o parser
 ````
-a
+
+
+```bash
+
+cmake ..
+
+cmake --build .
+
+
+ ```

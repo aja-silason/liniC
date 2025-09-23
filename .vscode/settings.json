@@ -1,0 +1,8 @@
+{
+    "cmake.sourceDirectory": "C:/projects/C/liniC/main",
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "parser.h": "c",
+        "main": "c"
+    }
+}
